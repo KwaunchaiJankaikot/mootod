@@ -1,0 +1,16 @@
+module.exports = {   
+  extends: [     
+    'eslint:recommended', // ใช้กฎที่แนะนำจาก ESLint     
+    'plugin:vue/essential' // กฎของ Vue.js   
+  ],   
+  env: {
+    browser: true,
+    node: true, // เพิ่มเพื่อให้รู้จัก process.env
+    es6: true
+  },
+  rules: {     
+    'no-console': 'off',   // อนุญาตให้ใช้ console ในระหว่างการพัฒนา     
+    'no-debugger': 'off',  // อนุญาตให้ใช้ debugger     
+    'semi': ['error', 'always'] // ให้มี semicolon ในทุกบรรทัด   
+  }    
+};

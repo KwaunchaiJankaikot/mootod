@@ -1,0 +1,16 @@
+{
+  "name": "mootod",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "client": "npm run serve --prefix frontend",
+    "server": "node backend/server.js"
+  }
+}

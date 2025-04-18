@@ -1,0 +1,10 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "node server.js"  // หรือใช้คำสั่งอื่น ๆ ที่รันเซิร์ฟเวอร์ Node.js ของคุณ
+  },
+  "dependencies": {
+    "express": "^4.17.1"  // ตัวอย่าง dependency ของ Express.js
+  }
+}

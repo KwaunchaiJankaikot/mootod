@@ -1,0 +1,19 @@
+{
+  "name": "mootod",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+  
+    "scripts": {
+      "start-frontend": "npm run serve --prefix frontend",  // รัน Vue.js frontend
+      "start-backend": "node backend/server.js",  // รัน Node.js backend
+      "dev": "concurrently \"npm run start-frontend\" \"npm run start-backend\""  // รันทั้งสองพร้อมกัน
+    }
+  
+  
+}

@@ -1,0 +1,17 @@
+{
+  "name": "mootod",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+  "scripts": {
+  "serve": "vue-cli-service serve",  // สคริปต์สำหรับรัน Vue.js
+  "start-backend": "cd ../backend && node server.js",  // รันเซิร์ฟเวอร์ Node.js (Backend)
+  "dev": "concurrently \"npm run serve\" \"npm run start-backend\""
+}
+
+}

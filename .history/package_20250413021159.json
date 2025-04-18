@@ -1,0 +1,8 @@
+{
+  "name": "mootod",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}
