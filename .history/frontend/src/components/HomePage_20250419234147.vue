@@ -5,38 +5,13 @@
         <img src="@/assets/logo.png" alt="Mootod Logo" v-if="false" />
         <h1>Mootod <span>อาหาร</span></h1>
       </div>
-      <div class="right-menu">
-        <div class="cart-icon" @click="toggleCart">
-          <span>🛒</span>
-          <span class="cart-badge" v-if="cartItems.length > 0">{{
-            cartItems.length
-          }}</span>
-        </div>
+      <div class="user-menu">
         <button class="user-btn">
           <i class="user-icon">👤</i>
           <span>ผู้ดูแลระบบ</span>
         </button>
       </div>
     </header>
-
-    <!-- ตะกร้าสินค้า -->
-    <CartSidebar
-      :cartItems="cartItems"
-      :isCartOpen="isCartOpen"
-      @close-cart="toggleCart"
-      @remove-item="removeFromCart"
-      @increase-quantity="increaseQuantity"
-      @decrease-quantity="decreaseQuantity"
-      @go-to-checkout="goToCheckout"
-    />
-
-    <!-- หน้าชำระเงิน -->
-    <CheckoutPage
-      v-if="isCheckoutModalOpen"
-      :cartItems="cartItems"
-      @close-checkout="closeCheckoutModal"
-      @payment-success="handlePaymentSuccess"
-    />
 
     <div class="welcome-banner">
       <div class="banner-content">
@@ -48,16 +23,17 @@
     <!-- แสดงรายการเมนู -->
     <h3 class="section-title">เมนูแนะนำ</h3>
     <div class="menu-cards">
-      <div v-for="menu in menus" :key="menu.id" class="menu-card">
+      <div v-for="menu in menus" :key="menu.id" class="menu-card" @click="orderMenu(menu)">
         <div class="card-image-container">
           <img :src="menu.image_url" alt="เมนูอาหาร" class="card-image" />
         </div>
         <div class="card-content">
-          <h3>{{ menu.name }}</h3>
-          <p>{{ menu.description }}</p>
+          <h2>{{ menu.name }}</h2>
+          <p><b>ประเภทอาหาร :</b> {{ menu.category }}</p>
+          <p><b>หมายเหตุ :</b> {{ menu.description }}</p>
           <div class="card-footer">
             <span class="price">{{ menu.price }} บาท</span>
-            <button class="card-btn" @click="addToCart(menu)">สั่งอาหาร</button>
+            <button class="card-btn">สั่งอาหาร</button>
           </div>
         </div>
       </div>
@@ -128,31 +104,17 @@
 
 <script>
 import axios from "axios";
-import CartSidebar from "@/components/CartSidebar.vue";
-import CheckoutPage from "@/components/CheckoutPage.vue";
 
 export default {
   name: "HomePage",
-  components: {
-    CartSidebar,
-    CheckoutPage
-  },
   data() {
     return {
       menus: [],
-      totalMenus: 0,
-      cartItems: [],
-      isCartOpen: false,
-      isCheckoutModalOpen: false,
+      totalMenus: 0
     };
   },
   mounted() {
     this.fetchMenus();
-    // โหลดข้อมูลตะกร้าจาก localStorage (ถ้ามี)
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      this.cartItems = JSON.parse(savedCart);
-    }
   },
   methods: {
     goTo(route) {
@@ -169,6 +131,9 @@ export default {
         case "reports":
           this.$router.push("/reports");
           break;
+        case "order-page":
+          this.$router.push("/order-page");
+          break;
         default:
           this.$router.push("/");
       }
@@ -182,99 +147,25 @@ export default {
         })
         .catch((error) => {
           console.error("เกิดข้อผิดพลาดในการดึงข้อมูลเมนู:", error);
-          
-          // กรณีไม่มี API จริง ใช้ข้อมูลตัวอย่าง
-          this.menus = [
-            {
-              id: 1,
-              name: "ข้าวผัดกระเพราหมู",
-              description: "ข้าวผัดกระเพราหมูสับ ไข่ดาว ผักสด",
-              price: 60,
-              image_url: "https://via.placeholder.com/400x300?text=กระเพราหมู"
-            },
-            {
-              id: 2,
-              name: "ส้มตำไทย",
-              description: "ส้มตำไทยรสเด็ด มะละกอสด พริกสด",
-              price: 55,
-              image_url: "https://via.placeholder.com/400x300?text=ส้มตำไทย"
-            },
-            {
-              id: 3,
-              name: "ต้มยำกุ้ง",
-              description: "ต้มยำกุ้งน้ำข้น กุ้งสด เห็ดสด ข่าตะไคร้",
-              price: 120,
-              image_url: "https://via.placeholder.com/400x300?text=ต้มยำกุ้ง"
-            },
-            {
-              id: 4,
-              name: "ผัดไทยกุ้งสด",
-              description: "ผัดไทยเส้นจันท์ กุ้งสด ไข่ ถั่วงอก ผักบุ้ง",
-              price: 80,
-              image_url: "https://via.placeholder.com/400x300?text=ผัดไทย"
-            }
-          ];
-          this.totalMenus = this.menus.length;
         });
     },
-    // ฟังก์ชันเกี่ยวกับตะกร้าสินค้า
-    addToCart(menu) {
-      // ตรวจสอบว่ามีรายการนี้ในตะกร้าหรือไม่
-      const existingItem = this.cartItems.find((item) => item.id === menu.id);
+    // ฟังก์ชันเมื่อคลิกเมนูอาหารเพื่อทำการสั่ง
+    orderMenu(menu) {
+      console.log("สั่งเมนู:", menu); // คุณสามารถเพิ่มฟังก์ชันเพื่อสั่งเมนูนี้ได้
 
-      if (existingItem) {
-        // ถ้ามีอยู่แล้ว เพิ่มจำนวน
-        existingItem.quantity += 1;
-      } else {
-        // ถ้ายังไม่มี เพิ่มรายการใหม่พร้อมจำนวน = 1
-        this.cartItems.push({
-          ...menu,
-          quantity: 1,
+      // ตัวอย่างการส่งข้อมูลการสั่งซื้อไปยังเซิร์ฟเวอร์
+      axios
+        .post("http://localhost:5000/orders", {
+          menuId: menu.id,
+          quantity: 1, // ปรับจำนวนตามต้องการ
+        })
+        .then((response) => {
+          alert("สั่งอาหารเรียบร้อย");
+          console.log("ข้อมูลการสั่งซื้อ:", response.data);
+        })
+        .catch((error) => {
+          console.error("เกิดข้อผิดพลาดในการสั่งอาหาร:", error);
         });
-      }
-
-      // บันทึกลง localStorage
-      this.saveCart();
-
-      // เปิดตะกร้าสินค้า
-      this.isCartOpen = true;
-    },
-    toggleCart() {
-      this.isCartOpen = !this.isCartOpen;
-    },
-    removeFromCart(index) {
-      this.cartItems.splice(index, 1);
-      this.saveCart();
-    },
-    increaseQuantity(index) {
-      this.cartItems[index].quantity += 1;
-      this.saveCart();
-    },
-    decreaseQuantity(index) {
-      if (this.cartItems[index].quantity > 1) {
-        this.cartItems[index].quantity -= 1;
-      } else {
-        // ถ้าเหลือแค่ 1 ชิ้น แล้วกดลด ให้ลบรายการออกจากตะกร้า
-        this.removeFromCart(index);
-      }
-      this.saveCart();
-    },
-    saveCart() {
-      localStorage.setItem("cart", JSON.stringify(this.cartItems));
-    },
-    // ฟังก์ชันเกี่ยวกับการชำระเงิน
-    goToCheckout() {
-      this.isCheckoutModalOpen = true;
-      this.isCartOpen = false; // ปิดตะกร้าเมื่อไปที่หน้าชำระเงิน
-    },
-    closeCheckoutModal() {
-      this.isCheckoutModalOpen = false;
-    },
-    handlePaymentSuccess() {
-      // ล้างตะกร้า
-      this.cartItems = [];
-      this.saveCart();
-      // ปิดหน้าชำระเงิน (จะถูกจัดการโดย CheckoutPage component แล้ว)
     },
   },
 };
@@ -287,7 +178,6 @@ export default {
   padding: 20px;
   font-family: "Prompt", "Kanit", sans-serif;
   background-color: #f9f9f9;
-  position: relative;
 }
 
 /* Header */
@@ -321,31 +211,9 @@ export default {
   margin-right: 10px;
 }
 
-.right-menu {
+.user-menu {
   display: flex;
   align-items: center;
-  gap: 15px;
-}
-
-.cart-icon {
-  position: relative;
-  cursor: pointer;
-  font-size: 24px;
-}
-
-.cart-badge {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background-color: #f44336;
-  color: white;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .user-btn {
@@ -584,8 +452,7 @@ export default {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .menu-cards,
-  .admin-cards {
+  .menu-cards, .admin-cards {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
 
@@ -608,14 +475,17 @@ export default {
     align-items: flex-start;
   }
 
-  .right-menu {
+  .user-menu {
     margin-top: 15px;
     width: 100%;
-    justify-content: space-between;
+  }
+  
+  .user-btn {
+    width: 100%;
+    justify-content: center;
   }
 
-  .menu-cards,
-  .admin-cards {
+  .menu-cards, .admin-cards {
     grid-template-columns: 1fr;
   }
 
@@ -626,7 +496,7 @@ export default {
   .stats-grid {
     grid-template-columns: 1fr 1fr;
   }
-
+  
   .card-image-container {
     height: 160px;
   }

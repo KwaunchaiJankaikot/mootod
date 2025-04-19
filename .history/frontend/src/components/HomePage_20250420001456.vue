@@ -137,146 +137,6 @@ export default {
     CartSidebar,
     CheckoutPage
   },
-  data() {
-    return {
-      menus: [],
-      totalMenus: 0,
-      cartItems: [],
-      isCartOpen: false,
-      isCheckoutModalOpen: false,
-    };
-  },
-  mounted() {
-    this.fetchMenus();
-    // โหลดข้อมูลตะกร้าจาก localStorage (ถ้ามี)
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      this.cartItems = JSON.parse(savedCart);
-    }
-  },
-  methods: {
-    goTo(route) {
-      switch (route) {
-        case "menu":
-          this.$router.push("/menu-list");
-          break;
-        case "add-menu":
-          this.$router.push("/add-menu");
-          break;
-        case "orders":
-          this.$router.push("/orders");
-          break;
-        case "reports":
-          this.$router.push("/reports");
-          break;
-        default:
-          this.$router.push("/");
-      }
-    },
-    fetchMenus() {
-      axios
-        .get("http://localhost:5000/menus") // เปลี่ยนเป็น URL ของ API ที่คุณใช้
-        .then((response) => {
-          this.menus = response.data; // บันทึกข้อมูลเมนูใน state
-          this.totalMenus = this.menus.length;
-        })
-        .catch((error) => {
-          console.error("เกิดข้อผิดพลาดในการดึงข้อมูลเมนู:", error);
-          
-          // กรณีไม่มี API จริง ใช้ข้อมูลตัวอย่าง
-          this.menus = [
-            {
-              id: 1,
-              name: "ข้าวผัดกระเพราหมู",
-              description: "ข้าวผัดกระเพราหมูสับ ไข่ดาว ผักสด",
-              price: 60,
-              image_url: "https://via.placeholder.com/400x300?text=กระเพราหมู"
-            },
-            {
-              id: 2,
-              name: "ส้มตำไทย",
-              description: "ส้มตำไทยรสเด็ด มะละกอสด พริกสด",
-              price: 55,
-              image_url: "https://via.placeholder.com/400x300?text=ส้มตำไทย"
-            },
-            {
-              id: 3,
-              name: "ต้มยำกุ้ง",
-              description: "ต้มยำกุ้งน้ำข้น กุ้งสด เห็ดสด ข่าตะไคร้",
-              price: 120,
-              image_url: "https://via.placeholder.com/400x300?text=ต้มยำกุ้ง"
-            },
-            {
-              id: 4,
-              name: "ผัดไทยกุ้งสด",
-              description: "ผัดไทยเส้นจันท์ กุ้งสด ไข่ ถั่วงอก ผักบุ้ง",
-              price: 80,
-              image_url: "https://via.placeholder.com/400x300?text=ผัดไทย"
-            }
-          ];
-          this.totalMenus = this.menus.length;
-        });
-    },
-    // ฟังก์ชันเกี่ยวกับตะกร้าสินค้า
-    addToCart(menu) {
-      // ตรวจสอบว่ามีรายการนี้ในตะกร้าหรือไม่
-      const existingItem = this.cartItems.find((item) => item.id === menu.id);
-
-      if (existingItem) {
-        // ถ้ามีอยู่แล้ว เพิ่มจำนวน
-        existingItem.quantity += 1;
-      } else {
-        // ถ้ายังไม่มี เพิ่มรายการใหม่พร้อมจำนวน = 1
-        this.cartItems.push({
-          ...menu,
-          quantity: 1,
-        });
-      }
-
-      // บันทึกลง localStorage
-      this.saveCart();
-
-      // เปิดตะกร้าสินค้า
-      this.isCartOpen = true;
-    },
-    toggleCart() {
-      this.isCartOpen = !this.isCartOpen;
-    },
-    removeFromCart(index) {
-      this.cartItems.splice(index, 1);
-      this.saveCart();
-    },
-    increaseQuantity(index) {
-      this.cartItems[index].quantity += 1;
-      this.saveCart();
-    },
-    decreaseQuantity(index) {
-      if (this.cartItems[index].quantity > 1) {
-        this.cartItems[index].quantity -= 1;
-      } else {
-        // ถ้าเหลือแค่ 1 ชิ้น แล้วกดลด ให้ลบรายการออกจากตะกร้า
-        this.removeFromCart(index);
-      }
-      this.saveCart();
-    },
-    saveCart() {
-      localStorage.setItem("cart", JSON.stringify(this.cartItems));
-    },
-    // ฟังก์ชันเกี่ยวกับการชำระเงิน
-    goToCheckout() {
-      this.isCheckoutModalOpen = true;
-      this.isCartOpen = false; // ปิดตะกร้าเมื่อไปที่หน้าชำระเงิน
-    },
-    closeCheckoutModal() {
-      this.isCheckoutModalOpen = false;
-    },
-    handlePaymentSuccess() {
-      // ล้างตะกร้า
-      this.cartItems = [];
-      this.saveCart();
-      // ปิดหน้าชำระเงิน (จะถูกจัดการโดย CheckoutPage component แล้ว)
-    },
-  },
 };
 </script>
 
@@ -632,3 +492,109 @@ export default {
   }
 }
 </style>
+  data() {
+    return {
+      menus: [],
+      totalMenus: 0,
+      cartItems: [],
+      isCartOpen: false,
+      isCheckoutModalOpen: false,
+    };
+  },
+  mounted() {
+    this.fetchMenus();
+    // โหลดข้อมูลตะกร้าจาก localStorage (ถ้ามี)
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      this.cartItems = JSON.parse(savedCart);
+    }
+  },
+  methods: {
+    goTo(route) {
+      switch (route) {
+        case "menu":
+          this.$router.push("/menu-list");
+          break;
+        case "add-menu":
+          this.$router.push("/add-menu");
+          break;
+        case "orders":
+          this.$router.push("/orders");
+          break;
+        case "reports":
+          this.$router.push("/reports");
+          break;
+        default:
+          this.$router.push("/");
+      }
+    },
+    fetchMenus() {
+      axios
+        .get("http://localhost:5000/menus") // เปลี่ยนเป็น URL ของ API ที่คุณใช้
+        .then((response) => {
+          this.menus = response.data; // บันทึกข้อมูลเมนูใน state
+          this.totalMenus = this.menus.length;
+        })
+        .catch((error) => {
+          console.error("เกิดข้อผิดพลาดในการดึงข้อมูลเมนู:", error);
+        });
+    },
+    // ฟังก์ชันเกี่ยวกับตะกร้าสินค้า
+    addToCart(menu) {
+      // ตรวจสอบว่ามีรายการนี้ในตะกร้าหรือไม่
+      const existingItem = this.cartItems.find((item) => item.id === menu.id);
+
+      if (existingItem) {
+        // ถ้ามีอยู่แล้ว เพิ่มจำนวน
+        existingItem.quantity += 1;
+      } else {
+        // ถ้ายังไม่มี เพิ่มรายการใหม่พร้อมจำนวน = 1
+        this.cartItems.push({
+          ...menu,
+          quantity: 1,
+        });
+      }
+
+      // บันทึกลง localStorage
+      this.saveCart();
+
+      // เปิดตะกร้าสินค้า
+      this.isCartOpen = true;
+    },
+    toggleCart() {
+      this.isCartOpen = !this.isCartOpen;
+    },
+    removeFromCart(index) {
+      this.cartItems.splice(index, 1);
+      this.saveCart();
+    },
+    increaseQuantity(index) {
+      this.cartItems[index].quantity += 1;
+      this.saveCart();
+    },
+    decreaseQuantity(index) {
+      if (this.cartItems[index].quantity > 1) {
+        this.cartItems[index].quantity -= 1;
+      } else {
+        // ถ้าเหลือแค่ 1 ชิ้น แล้วกดลด ให้ลบรายการออกจากตะกร้า
+        this.removeFromCart(index);
+      }
+      this.saveCart();
+    },
+    saveCart() {
+      localStorage.setItem("cart", JSON.stringify(this.cartItems));
+    },
+    // ฟังก์ชันเกี่ยวกับการชำระเงิน
+    goToCheckout() {
+      this.isCheckoutModalOpen = true;
+      this.isCartOpen = false; // ปิดตะกร้าเมื่อไปที่หน้าชำระเงิน
+    },
+    closeCheckoutModal() {
+      this.isCheckoutModalOpen = false;
+    },
+    handlePaymentSuccess() {
+      // ล้างตะกร้า
+      this.cartItems = [];
+      this.saveCart();
+      // ปิดหน้าชำระเงิน (จะถูกจัดการโดย CheckoutPage component แล้ว)
+    },
