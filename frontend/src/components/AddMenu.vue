@@ -78,6 +78,11 @@
           <span>เพิ่มเมนู</span>
         </button>
       </form>
+
+      <!-- ปุ่มถอยกลับ -->
+      <button @click="goBack" class="back-button">
+        ถอยกลับ
+      </button>
     </div>
   </div>
 </template>
@@ -114,8 +119,7 @@ export default {
       formData.append("description", this.menu.description);
       formData.append("price", this.menu.price);
       formData.append("image", this.menu.image);
-      formData.append('category', this.menu.category);  
-
+      formData.append("category", this.menu.category);
 
       axios
         .post("http://localhost:5000/upload", formData)
@@ -134,6 +138,10 @@ export default {
           console.error("เกิดข้อผิดพลาดในการเพิ่มเมนู:", error);
           alert("เกิดข้อผิดพลาดในการเพิ่มเมนู กรุณาลองใหม่อีกครั้ง");
         });
+    },
+    // ฟังก์ชันสำหรับกลับไปหน้า menu-list
+    goBack() {
+      this.$router.push("/menu-list");  // นำทางกลับไปยังหน้า menu-list
     },
   },
 };
@@ -249,6 +257,30 @@ export default {
 }
 
 .submit-button:active {
+  transform: scale(0.98);
+}
+
+/* สไตล์ปุ่มถอยกลับ */
+.back-button {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background-color: #ccc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.3s ease, transform 0.15s ease;
+}
+
+.back-button:hover {
+  background-color: #999;
+}
+
+.back-button:active {
   transform: scale(0.98);
 }
 </style>

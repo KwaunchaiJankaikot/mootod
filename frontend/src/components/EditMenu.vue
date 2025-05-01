@@ -84,17 +84,18 @@
               alt="Current Image"
               class="current-image"
             />
-            <!-- ปุ่มลบรูปภาพ -->
-            <button type="button" @click="deleteImage" class="delete-image-btn">
-              ลบรูปภาพ
-            </button>
-          </div>
-        </div>
 
         <!-- ปุ่มอัปเดตเมนู -->
         <button type="submit" class="submit-button">
           <span>อัปเดตเมนู</span>
         </button>
+
+         <!-- ปุ่มลบรูปภาพ -->
+         <button type="button" @click="deleteImage" class="delete-image-btn">
+              ลบรูปภาพ
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   </div>
