@@ -176,8 +176,11 @@ app.get('/inventorypage/:id', (req, res) => {
 
 // Route สำหรับเพิ่มวัตถุดิบใหม่
 app.post('/inventorypage', upload.single('image'), (req, res) => {
-  const { name, quantity, unit, price_per_unit, min_quantity, received_date } = req.body;
+  const { name, quantity, unit, price_per_unit, min_quantity, notes, received_date } = req.body;
   
+ // Log ข้อมูลที่ได้รับ
+ console.log('Received data:', req.body);
+
   // ตรวจสอบข้อมูลที่จำเป็น
   if (!name || !quantity || !unit || !price_per_unit || !min_quantity || !received_date) {
     return res.status(400).json({ error: 'ข้อมูลไม่ครบถ้วน' });
@@ -191,8 +194,8 @@ app.post('/inventorypage', upload.single('image'), (req, res) => {
   
   // เพิ่มข้อมูลวัตถุดิบในฐานข้อมูล
   client.query(
-    'INSERT INTO inventory (name, quantity, unit, price_per_unit, min_quantity, received_date, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-    [name, quantity, unit, price_per_unit, min_quantity, received_date, imageUrl],
+    'INSERT INTO inventory (name, quantity, unit, price_per_unit, min_quantity, received_date, notes, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+    [name, quantity, unit, price_per_unit, min_quantity, received_date, notes || null, imageUrl],
     (err, result) => {
       if (err) {
         console.error('เกิดข้อผิดพลาดในการเพิ่มวัตถุดิบ:', err);
@@ -210,7 +213,7 @@ app.post('/inventorypage', upload.single('image'), (req, res) => {
 // Route สำหรับอัปเดตวัตถุดิบ
 app.put('/inventorypage/:id', upload.single('image'), (req, res) => {
   const itemId = req.params.id;
-  const { name, quantity, unit, price_per_unit, min_quantity, received_date } = req.body;
+  const { name, quantity, unit, price_per_unit, min_quantity, notes, received_date } = req.body;
   
   // ตรวจสอบข้อมูลที่จำเป็น
   if (!name || !quantity || !unit || !price_per_unit || !min_quantity || !received_date) {
@@ -242,8 +245,8 @@ app.put('/inventorypage/:id', upload.single('image'), (req, res) => {
       
       // อัปเดตข้อมูลวัตถุดิบในฐานข้อมูล
       client.query(
-        'UPDATE inventory SET name = $1, quantity = $2, unit = $3, price_per_unit = $4, min_quantity = $5, received_date = $6, image_url = $7 WHERE id = $8 RETURNING *',
-        [name, quantity, unit, price_per_unit, min_quantity, received_date, imageUrl, itemId],
+        'UPDATE inventory SET name = $1, quantity = $2, unit = $3, price_per_unit = $4, min_quantity = $5, notes = $6, received_date = $7, image_url = $8 WHERE id = $9 RETURNING *',
+        [name, quantity, unit, price_per_unit, min_quantity, notes, received_date, imageUrl, itemId],
         (err, updateResult) => {
           if (err) {
             console.error('เกิดข้อผิดพลาดในการอัปเดตวัตถุดิบ:', err);
