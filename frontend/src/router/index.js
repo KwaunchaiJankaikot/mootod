@@ -6,6 +6,7 @@ import EditMenu from '../components/EditMenu.vue';
 import InventoryPage from '../components/InventoryPage.vue'; 
 import MenuOrder from '../components/MenuOrder.vue';
 import Cart from '../components/Cart.vue';
+import Report from '../components/Report.vue';
 
 const routes = [
   {
@@ -44,6 +45,11 @@ const routes = [
     name: 'Cart',
     component: Cart
   },
+  {
+    path: '/reportpage',
+    name: 'ReportPage',
+    component: Report
+  }
 ];
 
 const router = createRouter({

@@ -91,6 +91,21 @@ app.post('/upload', upload.single('image'), (req, res) => {
   );
 });
 
+// Route สำหรับการลบเมนู
+app.delete('/menus/:id', (req, res) => {
+  const menuId = req.params.id;
+  // ลบเมนูจากฐานข้อมูล
+  const query = 'DELETE FROM menus WHERE id = $1';
+  client.query(query, [menuId], (err, result) => {
+    if (err) {
+      console.error('เกิดข้อผิดพลาดในการลบเมนู:', err);
+      return res.status(500).json({ error: 'ไม่สามารถลบเมนูได้' });
+    }
+    res.status(200).json({ message: 'ลบเมนูสำเร็จ' });
+  });
+});
+
+
 // Route สำหรับการอัปเดตเมนู
 app.put('/menus/:id', upload.single('image'), (req, res) => {
   const menuId = req.params.id;
@@ -734,6 +749,84 @@ app.get('/reports/popular-menus', (req, res) => {
     res.status(200).json(result.rows);
   });
 });
+app.get('/reports/sales', (req, res) => {
+  const { start_date, end_date, period } = req.query;
+  
+  // ตรวจสอบว่ามีวันที่เริ่มต้นและวันที่สิ้นสุด
+  if (!start_date || !end_date) {
+    return res.status(400).json({ error: 'ต้องระบุ start_date และ end_date' });
+  }
+  
+  // กำหนดการจัดกลุ่มตามช่วงเวลา (รายวัน, รายสัปดาห์, รายเดือน)
+  let groupByDate;
+  switch (period) {
+    case 'week':
+      groupByDate = `DATE_TRUNC('week', order_date)`;
+      break;
+    case 'month':
+      groupByDate = `DATE_TRUNC('month', order_date)`;
+      break;
+    default:
+      groupByDate = `DATE(order_date)`;
+  }
+  
+  // คำสั่ง SQL สำหรับดึงข้อมูลสรุปรายรับรายจ่าย
+  const query = `
+    SELECT 
+      ${groupByDate} AS date,
+      COUNT(*) AS total_orders,
+      SUM(total_amount) AS total_sales,
+      SUM(discount_amount) AS total_discounts,
+      SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END) AS collected_amount,
+      SUM(CASE WHEN order_status = 'cancelled' THEN total_amount ELSE 0 END) AS cancelled_amount,
+      SUM(oc.total_cost) AS total_costs,
+      SUM(oc.profit) AS total_profit
+    FROM 
+      orders o
+    LEFT JOIN 
+      order_costs oc ON o.id = oc.order_id
+    WHERE 
+      o.order_date BETWEEN $1 AND $2
+    GROUP BY 
+      ${groupByDate}
+    ORDER BY 
+      date
+  `;
+  
+  client.query(query, [start_date, end_date], (err, result) => {
+    if (err) {
+      console.error('เกิดข้อผิดพลาดในการดึงข้อมูลสรุปรายรับรายจ่าย:', err);
+      return res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลสรุปรายรับรายจ่ายได้' });
+    }
+    
+    // สร้างข้อมูลสรุปรวม
+    const summary = {
+      total_orders: 0,
+      total_sales: 0,
+      total_discounts: 0,
+      collected_amount: 0,
+      cancelled_amount: 0,
+      total_costs: 0,
+      total_profit: 0
+    };
+    
+    result.rows.forEach(row => {
+      summary.total_orders += parseInt(row.total_orders);
+      summary.total_sales += parseFloat(row.total_sales);
+      summary.total_discounts += parseFloat(row.total_discounts);
+      summary.collected_amount += parseFloat(row.collected_amount);
+      summary.cancelled_amount += parseFloat(row.cancelled_amount);
+      summary.total_costs += parseFloat(row.total_costs);
+      summary.total_profit += parseFloat(row.total_profit);
+    });
+    
+    res.status(200).json({
+      data: result.rows,
+      summary
+    });
+  });
+});
+
 
 // เสิร์ฟไฟล์รูปจากโฟลเดอร์ images
 app.use('/images', express.static(path.join(__dirname, 'images')));

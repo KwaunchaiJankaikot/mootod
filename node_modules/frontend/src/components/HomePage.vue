@@ -172,7 +172,7 @@ export default {
           this.$router.push("/orders");
           break;
         case "reports":
-          this.$router.push("/reports");
+          this.$router.push("/reportpage");
           break;
         case "inventorypage":
           this.$router.push("/inventorypage");

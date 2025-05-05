@@ -98,11 +98,12 @@
         </small>
       </div>
 
-      <!-- ปุ่มเพิ่มรายการ -->
+      <!-- ปุ่มเพิ่ม/ปิดรายการ -->
       <div class="form-group">
         <button @click="addItemToList" class="btn btn-primary">เพิ่มรายการ</button>
+        <button @click="showCalculateForm = false" class="btn btn-danger ">ปิด</button>
       </div>
-
+      
       <!-- แสดงรายการทั้งหมดที่เพิ่ม -->
       <div v-if="addedItems.length > 0" class="added-items">
         <h4>รายการวัตถุดิบที่ใช้:</h4>
@@ -356,7 +357,7 @@ export default {
       calculatedCost: null,
       totalProfit: null,
       totalProfitPercent: null,
-      showCalculateForm: true,
+      showCalculateForm: false,
       showEditForm: false,
       showDeleteConfirm: false,
       deleteItemId: null,
@@ -514,176 +515,176 @@ export default {
     },
     // จัดการไฟล์ภาพสำหรับเพิ่มใหม่
     onImageChange(event) {
-    const file = event.target.files[0];
-    if (file) {
-      this.newItem.image = file;
-      this.imageName = file.name;
-    } else {
-      this.newItem.image = null;
-      this.imageName = "";
-    }
-  },
+      const file = event.target.files[0];
+      if (file) {
+        this.newItem.image = file;
+        this.imageName = file.name;
+      } else {
+        this.newItem.image = null;
+        this.imageName = "";
+      }
+    },
 
-  // จัดการไฟล์ภาพสำหรับแก้ไข
-  onEditImageChange(event) {
-    const file = event.target.files[0];
-    if (file) {
-      this.editingItem.newImage = file;
-      this.editImageName = file.name;
-    } else {
+    // จัดการไฟล์ภาพสำหรับแก้ไข
+    onEditImageChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.editingItem.newImage = file;
+        this.editImageName = file.name;
+      } else {
+        this.editingItem.newImage = null;
+        this.editImageName = "";
+      }
+    },
+
+    // ลบรูปภาพในโหมดแก้ไข
+    deleteEditImage() {
+      this.editingItem.image_url = "";
       this.editingItem.newImage = null;
       this.editImageName = "";
-    }
+    },
+
+    // เพิ่มวัตถุดิบใหม่
+    addInventoryItem() {
+      const formData = new FormData();
+      formData.append("name", this.newItem.name);
+      formData.append("quantity", this.newItem.quantity);
+      formData.append("unit", this.newItem.unit);
+      formData.append("price_per_unit", this.newItem.price_per_unit);
+      formData.append("min_quantity", this.newItem.min_quantity);
+      formData.append("received_date", this.newItem.received_date);
+      formData.append("notes", this.newItem.notes);
+
+      if (this.newItem.image) {
+        formData.append("image", this.newItem.image);
+      }
+
+      axios
+        .post("http://localhost:5000/inventorypage", formData)
+        .then(() => {
+          alert("เพิ่มวัตถุดิบสำเร็จ!");
+          this.fetchInventoryItems();
+          this.cancelAdd();
+        })
+        .catch((error) => {
+          console.error("เกิดข้อผิดพลาดในการเพิ่มวัตถุดิบ:", error);
+          alert("เกิดข้อผิดพลาดในการเพิ่มวัตถุดิบ");
+        });
+    },
+
+    // เริ่มการแก้ไขวัตถุดิบ
+    editItem(item) {
+      this.editingItem = {
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        price_per_unit: item.price_per_unit,
+        min_quantity: item.min_quantity,
+        received_date: item.received_date.substr(0, 10),
+        image_url: item.image_url,
+        newImage: null,
+        notes: item.notes
+      };
+      this.showEditForm = true;
+      this.editImageName = "";
+    },
+
+    // อัปเดตวัตถุดิบ
+    updateInventoryItem() {
+      const formData = new FormData();
+      formData.append("name", this.editingItem.name);
+      formData.append("quantity", this.editingItem.quantity);
+      formData.append("unit", this.editingItem.unit);
+      formData.append("price_per_unit", this.editingItem.price_per_unit);
+      formData.append("min_quantity", this.editingItem.min_quantity);
+      formData.append("received_date", this.editingItem.received_date);
+      formData.append("notes", this.editingItem.notes);
+
+      if (this.editingItem.newImage) {
+        formData.append("image", this.editingItem.newImage);
+      }
+
+      axios
+        .put(`http://localhost:5000/inventorypage/${this.editingItem.id}`, formData)
+        .then(() => {
+          alert("อัปเดตวัตถุดิบสำเร็จ!");
+          this.fetchInventoryItems();
+          this.cancelEdit();
+        })
+        .catch((error) => {
+          console.error("เกิดข้อผิดพลาดในการอัปเดตวัตถุดิบ:", error);
+          alert("เกิดข้อผิดพลาดในการอัปเดตวัตถุดิบ");
+        });
+    },
+
+    // ยืนยันการลบวัตถุดิบ
+    confirmDelete(id) {
+      this.deleteItemId = id;
+      this.showDeleteConfirm = true;
+    },
+
+    // ลบวัตถุดิบ
+    deleteInventoryItem() {
+      axios
+        .delete(`http://localhost:5000/inventorypage/${this.deleteItemId}`)
+        .then(() => {
+          alert("ลบวัตถุดิบสำเร็จ!");
+          this.fetchInventoryItems();
+          this.cancelDelete();
+        })
+        .catch((error) => {
+          console.error("เกิดข้อผิดพลาดในการลบวัตถุดิบ:", error);
+          alert("เกิดข้อผิดพลาดในการลบวัตถุดิบ");
+        });
+    },
+
+    // ยกเลิกการเพิ่ม
+    cancelAdd() {
+      this.showAddForm = false;
+      this.newItem = {
+        name: "",
+        quantity: 0,
+        unit: "กรัม",
+        price_per_unit: 0,
+        min_quantity: 0,
+        received_date: new Date().toISOString().substr(0, 10),
+        image: null,
+        notes: ""
+      };
+      this.imageName = "";
+    },
+
+    // ยกเลิกการแก้ไข
+    cancelEdit() {
+      this.showEditForm = false;
+      this.editingItem = {
+        id: null,
+        name: "",
+        quantity: 0,
+        unit: "",
+        price_per_unit: 0,
+        min_quantity: 0,
+        received_date: "",
+        image_url: "",
+        newImage: null,
+        notes: ""
+      };
+      this.editImageName = "";
+    },
+
+    // ยกเลิกการลบ
+    cancelDelete() {
+      this.showDeleteConfirm = false;
+      this.deleteItemId = null;
+    },
+
+    // จัดรูปแบบวันที่
+    formatDate(dateString) {
+      const options = { year: "numeric", month: "long", day: "numeric" };
+      return new Date(dateString).toLocaleDateString("th-TH", options);
+    },
   },
-
-  // ลบรูปภาพในโหมดแก้ไข
-  deleteEditImage() {
-    this.editingItem.image_url = "";
-    this.editingItem.newImage = null;
-    this.editImageName = "";
-  },
-
-  // เพิ่มวัตถุดิบใหม่
-  addInventoryItem() {
-    const formData = new FormData();
-    formData.append("name", this.newItem.name);
-    formData.append("quantity", this.newItem.quantity);
-    formData.append("unit", this.newItem.unit);
-    formData.append("price_per_unit", this.newItem.price_per_unit);
-    formData.append("min_quantity", this.newItem.min_quantity);
-    formData.append("received_date", this.newItem.received_date);
-    formData.append("notes", this.newItem.notes);
-
-    if (this.newItem.image) {
-      formData.append("image", this.newItem.image);
-    }
-
-    axios
-      .post("http://localhost:5000/inventorypage", formData)
-      .then(() => {
-        alert("เพิ่มวัตถุดิบสำเร็จ!");
-        this.fetchInventoryItems();
-        this.cancelAdd();
-      })
-      .catch((error) => {
-        console.error("เกิดข้อผิดพลาดในการเพิ่มวัตถุดิบ:", error);
-        alert("เกิดข้อผิดพลาดในการเพิ่มวัตถุดิบ");
-      });
-  },
-
-  // เริ่มการแก้ไขวัตถุดิบ
-  editItem(item) {
-    this.editingItem = {
-      id: item.id,
-      name: item.name,
-      quantity: item.quantity,
-      unit: item.unit,
-      price_per_unit: item.price_per_unit,
-      min_quantity: item.min_quantity,
-      received_date: item.received_date.substr(0, 10),
-      image_url: item.image_url,
-      newImage: null,
-      notes: item.notes
-    };
-    this.showEditForm = true;
-    this.editImageName = "";
-  },
-
-  // อัปเดตวัตถุดิบ
-  updateInventoryItem() {
-    const formData = new FormData();
-    formData.append("name", this.editingItem.name);
-    formData.append("quantity", this.editingItem.quantity);
-    formData.append("unit", this.editingItem.unit);
-    formData.append("price_per_unit", this.editingItem.price_per_unit);
-    formData.append("min_quantity", this.editingItem.min_quantity);
-    formData.append("received_date", this.editingItem.received_date);
-    formData.append("notes", this.editingItem.notes);
-
-    if (this.editingItem.newImage) {
-      formData.append("image", this.editingItem.newImage);
-    }
-
-    axios
-      .put(`http://localhost:5000/inventorypage/${this.editingItem.id}`, formData)
-      .then(() => {
-        alert("อัปเดตวัตถุดิบสำเร็จ!");
-        this.fetchInventoryItems();
-        this.cancelEdit();
-      })
-      .catch((error) => {
-        console.error("เกิดข้อผิดพลาดในการอัปเดตวัตถุดิบ:", error);
-        alert("เกิดข้อผิดพลาดในการอัปเดตวัตถุดิบ");
-      });
-  },
-
-  // ยืนยันการลบวัตถุดิบ
-  confirmDelete(id) {
-    this.deleteItemId = id;
-    this.showDeleteConfirm = true;
-  },
-
-  // ลบวัตถุดิบ
-  deleteInventoryItem() {
-    axios
-      .delete(`http://localhost:5000/inventorypage/${this.deleteItemId}`)
-      .then(() => {
-        alert("ลบวัตถุดิบสำเร็จ!");
-        this.fetchInventoryItems();
-        this.cancelDelete();
-      })
-      .catch((error) => {
-        console.error("เกิดข้อผิดพลาดในการลบวัตถุดิบ:", error);
-        alert("เกิดข้อผิดพลาดในการลบวัตถุดิบ");
-      });
-  },
-
-  // ยกเลิกการเพิ่ม
-  cancelAdd() {
-    this.showAddForm = false;
-    this.newItem = {
-      name: "",
-      quantity: 0,
-      unit: "กรัม",
-      price_per_unit: 0,
-      min_quantity: 0,
-      received_date: new Date().toISOString().substr(0, 10),
-      image: null,
-      notes: ""
-    };
-    this.imageName = "";
-  },
-
-  // ยกเลิกการแก้ไข
-  cancelEdit() {
-    this.showEditForm = false;
-    this.editingItem = {
-      id: null,
-      name: "",
-      quantity: 0,
-      unit: "",
-      price_per_unit: 0,
-      min_quantity: 0,
-      received_date: "",
-      image_url: "",
-      newImage: null,
-      notes: ""
-    };
-    this.editImageName = "";
-  },
-
-  // ยกเลิกการลบ
-  cancelDelete() {
-    this.showDeleteConfirm = false;
-    this.deleteItemId = null;
-  },
-
-  // จัดรูปแบบวันที่
-  formatDate(dateString) {
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(dateString).toLocaleDateString("th-TH", options);
-  },
-},
 };
 </script>
 
@@ -830,6 +831,7 @@ export default {
   padding: 6px 12px;
   cursor: pointer;
   transition: background-color 0.3s;
+  width:65%;
 
 }
 
@@ -845,6 +847,7 @@ export default {
   padding: 6px 12px;
   cursor: pointer;
   transition: background-color 0.3s;
+  width:65%;
 }
 
 .delete-button:hover {
@@ -1135,11 +1138,13 @@ textarea.form-control {
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s;
+  width: 10%;
 }
 
 .btn-primary {
   background-color: #4caf50;
   color: white;
+  margin-right: 10px;
 }
 
 .btn-primary:hover {
@@ -1217,8 +1222,15 @@ textarea.form-control {
 
 /* อนิเมชั่น */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .added-items {
@@ -1242,7 +1254,7 @@ select.form-control {
     display: block;
     overflow-x: auto;
   }
-  
+
   .summary-item {
     padding: 8px 0;
   }

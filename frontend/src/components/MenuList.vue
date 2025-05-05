@@ -14,25 +14,13 @@
     </div>
 
     <div class="menu-filters">
-      <button 
-        class="filter-btn" 
-        :class="{ active: activeFilter === 'all' }" 
-        @click="setFilter('all')"
-      >
+      <button class="filter-btn" :class="{ active: activeFilter === 'all' }" @click="setFilter('all')">
         ทั้งหมด
       </button>
-      <button 
-        class="filter-btn" 
-        :class="{ active: activeFilter === 'popular' }" 
-        @click="setFilter('popular')"
-      >
+      <button class="filter-btn" :class="{ active: activeFilter === 'popular' }" @click="setFilter('popular')">
         ยอดนิยม
       </button>
-      <button 
-        class="filter-btn" 
-        :class="{ active: activeFilter === 'new' }" 
-        @click="setFilter('new')"
-      >
+      <button class="filter-btn" :class="{ active: activeFilter === 'new' }" @click="setFilter('new')">
         มาใหม่
       </button>
     </div>
@@ -60,7 +48,7 @@
         </div>
         <div class="menu-info">
           <h3>{{ menu.name }}</h3>
-          <p class="menu-category">{{menu.category}}</p>
+          <p class="menu-category">{{ menu.category }}</p>
           <p class="menu-description">{{ menu.description }}</p>
           <div class="menu-price">{{ menu.price }} บาท</div>
         </div>
@@ -122,8 +110,8 @@ export default {
         this.filteredMenus = [...this.menus];
       } else {
         const term = this.searchTerm.toLowerCase();
-        this.filteredMenus = this.menus.filter(menu => 
-          menu.name.toLowerCase().includes(term) || 
+        this.filteredMenus = this.menus.filter(menu =>
+          menu.name.toLowerCase().includes(term) ||
           menu.description.toLowerCase().includes(term)
         );
       }
@@ -155,16 +143,17 @@ export default {
     deleteMenu() {
       axios.delete(`http://localhost:5000/menus/${this.menuToDelete.id}`)
         .then(() => {
+          // ลบเมนูออกจากรายการ
           this.menus = this.menus.filter(menu => menu.id !== this.menuToDelete.id);
           this.filterMenus();  // รีเฟรชเมนูที่กรอง
-          this.showDeleteModal = false;
-          this.menuToDelete = {};
+          this.showDeleteModal = false;  // ปิด modal ยืนยันการลบ
+          this.menuToDelete = {};  // เคลียร์ข้อมูลเมนูที่ลบ
           alert('ลบเมนูสำเร็จ');
         })
         .catch(error => {
           console.error('เกิดข้อผิดพลาดในการลบเมนู:', error);
           alert('เกิดข้อผิดพลาดในการลบเมนู');
-          this.showDeleteModal = false;
+          this.showDeleteModal = false;  // ปิด modal ถ้ามีข้อผิดพลาด
         });
     }
   }
@@ -270,7 +259,8 @@ export default {
 }
 
 /* Loading & Empty States */
-.loading-indicator, .empty-state {
+.loading-indicator,
+.empty-state {
   text-align: center;
   padding: 60px 0;
   color: #666;
@@ -315,13 +305,14 @@ export default {
   overflow: hidden;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 400px; /* กำหนดความสูงของการ์ด */
+  height: 400px;
+  /* กำหนดความสูงของการ์ด */
   display: flex;
   flex-direction: column;
 }
 
 .menu-image {
-  height: 200px; 
+  height: 200px;
   overflow: hidden;
   background-color: #f9f9f9;
 }
@@ -329,12 +320,14 @@ export default {
 .menu-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* ทำให้ภาพไม่เบี้ยวและไม่ขยายเกินขอบการ์ด */
+  object-fit: cover;
+  /* ทำให้ภาพไม่เบี้ยวและไม่ขยายเกินขอบการ์ด */
 }
 
 .menu-info {
   padding: 15px;
-  flex-grow: 1; /* ทำให้เนื้อหาภายในการ์ดเติบโตเต็มที่ */
+  flex-grow: 1;
+  /* ทำให้เนื้อหาภายในการ์ดเติบโตเต็มที่ */
 }
 
 .menu-actions {
@@ -344,7 +337,8 @@ export default {
   gap: 10px;
 }
 
-.edit-btn, .delete-btn {
+.edit-btn,
+.delete-btn {
   flex: 1;
   padding: 8px 0;
   font-size: 14px;
@@ -405,7 +399,8 @@ export default {
   justify-content: flex-end;
 }
 
-.cancel-btn, .confirm-btn {
+.cancel-btn,
+.confirm-btn {
   padding: 8px 16px;
   border: none;
   border-radius: 6px;
